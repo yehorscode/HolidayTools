@@ -117,7 +117,7 @@ export default function AdventCalendar() {
 		});
 		acceptTimeoutRef.current = setTimeout(() => {
 			handleDialogChange(false);
-		}, 1200);
+		}, 1000);
 	};
 	const windows = Array.from({ length: 24 }, (_, index) => {
 		const day = index + 1;
