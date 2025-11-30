@@ -1,0 +1,22 @@
+@keyframes openCard {
+    from {
+        transform: rotateY(0deg);
+    }
+    to {
+        transform: rotateY(-90deg);
+    }
+}
+
+.calendar-window {
+    perspective: 800px;
+}
+
+.calendar-window-front {
+    transform-origin: left;
+    backface-visibility: hidden;
+    transform-style: preserve-3d;
+}
+
+.calendar-window-front--open {
+    animation: openCard 0.6s forwards;
+}
