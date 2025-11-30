@@ -1,17 +1,17 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import calendarbg from "@/assets/calendarbg.jpg";
 import "./advent-calendar.scss";
 import {
 	AlertDialog,
 	AlertDialogAction,
-	AlertDialogCancel,
 	AlertDialogContent,
 	AlertDialogDescription,
 	AlertDialogFooter,
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-
+import { Trash } from "lucide-react";
+import { Button } from "@/components/ui/button";
 const window_rewards: Record<number, string> = {
 	1: "Half Life 3",
 	2: "Candy Cane",
@@ -21,29 +21,58 @@ const window_rewards: Record<number, string> = {
 	6: "Chocolates",
 	7: "ROSCHEN candy",
 	8: "Alien invasion",
-    9: "Chocolates",
-    10: "Empty steam account",
-    11: "Gazzilion moneys",
-    12: "Luck",
-    13: "Minecraft 2 (hytale)",
-    14: "Idk, whatever u want",
-    15: "Free itunes subscription",
-    16: "Unforseen  consequences",
-    17: "A JOB",
-    18: "Minsk traktor",
-    19: "A black hole in your house",
-    20: "A new car",
-    21: "-300 siege coins",
-    22: "Mint chocolates",
-    23: "A puppy",
-    24: "something you wish for"
+	9: "Chocolates",
+	10: "Empty steam account",
+	11: "Gazzilion moneys",
+	12: "Luck",
+	13: "Minecraft 2 (hytale)",
+	14: "Idk, whatever u want",
+	15: "Free itunes subscription",
+	16: "Unforseen  consequences",
+	17: "A JOB",
+	18: "Minsk traktor",
+	19: "A black hole in your house",
+	20: "A new car",
+	21: "-300 siege coins",
+	22: "Mint chocolates",
+	23: "A puppy",
+	24: "something you wish for",
 };
 
 export default function AdventCalendar() {
 	const [openedDays, setOpenedDays] = useState<Set<number>>(new Set());
 	const [activeDay, setActiveDay] = useState<number | null>(null);
+	const [isTrashAnimating, setIsTrashAnimating] = useState(false);
+	const [isAccepted, setIsAccepted] = useState(false);
+	const trashTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+	const acceptTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+	const clearTrashTimeout = () => {
+		if (trashTimeoutRef.current) {
+			clearTimeout(trashTimeoutRef.current);
+			trashTimeoutRef.current = null;
+		}
+	};
+
+	const clearAcceptTimeout = () => {
+		if (acceptTimeoutRef.current) {
+			clearTimeout(acceptTimeoutRef.current);
+			acceptTimeoutRef.current = null;
+		}
+	};
+
+	useEffect(() => {
+		return () => {
+			clearTrashTimeout();
+			clearAcceptTimeout();
+		};
+	}, []);
 
 	const handleOpen = (day: number) => {
+		clearTrashTimeout();
+		clearAcceptTimeout();
+		setIsTrashAnimating(false);
+		setIsAccepted(false);
 		setOpenedDays((prev) => {
 			if (prev.has(day)) {
 				return prev;
@@ -57,10 +86,39 @@ export default function AdventCalendar() {
 
 	const handleDialogChange = (open: boolean) => {
 		if (!open) {
+			clearTrashTimeout();
+			clearAcceptTimeout();
 			setActiveDay(null);
+			setIsTrashAnimating(false);
+			setIsAccepted(false);
 		}
 	};
 
+	const triggerTrashAnimation = () => {
+		clearTrashTimeout();
+		clearAcceptTimeout();
+		setIsTrashAnimating(false);
+		setIsAccepted(false);
+		requestAnimationFrame(() => {
+			setIsTrashAnimating(true);
+		});
+		trashTimeoutRef.current = setTimeout(() => {
+			handleDialogChange(false);
+		}, 1200);
+	};
+
+	const triggerAcceptAnimation = () => {
+		clearTrashTimeout();
+		clearAcceptTimeout();
+		setIsTrashAnimating(false);
+		setIsAccepted(false);
+		requestAnimationFrame(() => {
+			setIsAccepted(true);
+		});
+		acceptTimeoutRef.current = setTimeout(() => {
+			handleDialogChange(false);
+		}, 1200);
+	};
 	const windows = Array.from({ length: 24 }, (_, index) => {
 		const day = index + 1;
 		return {
@@ -107,7 +165,12 @@ export default function AdventCalendar() {
 				open={activeDay !== null}
 				onOpenChange={handleDialogChange}
 			>
-				<AlertDialogContent className="bg-linear-to-br from-blue-300 to-blue-400">
+				<AlertDialogContent
+					className={
+						(isTrashAnimating ? "popup--trashed" : "") +
+						(isAccepted ? " popup--accepted" : "")
+					}
+				>
 					<AlertDialogHeader>
 						<AlertDialogTitle>
 							{activeDay ? `Day ${activeDay}` : ""}
@@ -116,12 +179,21 @@ export default function AdventCalendar() {
 							{activeDay
 								? `Today you get: ${window_rewards[activeDay]}`
 								: ""}
+							<p className="opacity-50 text-xs">
+								No rewards will be given out this is all just a
+								joke.
+							</p>
 						</AlertDialogDescription>
 					</AlertDialogHeader>
 					<AlertDialogFooter>
-						<AlertDialogCancel>Close</AlertDialogCancel>
+						<Button variant="link" onClick={triggerTrashAnimation}>
+							<Trash /> I don't want this
+						</Button>
 						<AlertDialogAction
-							onClick={() => handleDialogChange(false)}
+							onClick={(event) => {
+								event.preventDefault();
+								triggerAcceptAnimation();
+							}}
 						>
 							Got it
 						</AlertDialogAction>

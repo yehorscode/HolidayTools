@@ -20,3 +20,31 @@
 .calendar-window-front--open {
     animation: openCard 0.6s forwards;
 }
+
+.popup--trashed {
+    animation: trashPopup 2s forwards;
+    background-color: red;
+}
+
+@keyframes trashPopup {
+    from {
+        transform: rotateZ(0deg);
+    }
+    to {
+        transform: rotateZ(90deg) translateX(1000px);
+    }
+}
+
+.popup--accepted {
+    animation: acceptPopup 1s forwards;
+    background-color: green;
+}
+
+@keyframes acceptPopup {
+    from {
+        transform: translateX(0px);
+    }
+    to {
+        transform: translateY(-1000px);
+    }
+}
